@@ -3,7 +3,6 @@
 import grpc
 
 import chat_pb2 as chat__pb2
-from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
 class ChatServiceStub(object):
@@ -20,34 +19,12 @@ class ChatServiceStub(object):
                 request_serializer=chat__pb2.ConnectionRequest.SerializeToString,
                 response_deserializer=chat__pb2.ConnectionResponse.FromString,
                 )
-        self.SendMessage = channel.unary_unary(
-                '/ChatService/SendMessage',
-                request_serializer=chat__pb2.ChatMessage.SerializeToString,
-                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                )
-        self.ReceiveMessage = channel.unary_stream(
-                '/ChatService/ReceiveMessage',
-                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-                response_deserializer=chat__pb2.ChatMessage.FromString,
-                )
 
 
 class ChatServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def Connect(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def SendMessage(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
-
-    def ReceiveMessage(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -60,16 +37,6 @@ def add_ChatServiceServicer_to_server(servicer, server):
                     servicer.Connect,
                     request_deserializer=chat__pb2.ConnectionRequest.FromString,
                     response_serializer=chat__pb2.ConnectionResponse.SerializeToString,
-            ),
-            'SendMessage': grpc.unary_unary_rpc_method_handler(
-                    servicer.SendMessage,
-                    request_deserializer=chat__pb2.ChatMessage.FromString,
-                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            ),
-            'ReceiveMessage': grpc.unary_stream_rpc_method_handler(
-                    servicer.ReceiveMessage,
-                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-                    response_serializer=chat__pb2.ChatMessage.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,39 +62,5 @@ class ChatService(object):
         return grpc.experimental.unary_unary(request, target, '/ChatService/Connect',
             chat__pb2.ConnectionRequest.SerializeToString,
             chat__pb2.ConnectionResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def SendMessage(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ChatService/SendMessage',
-            chat__pb2.ChatMessage.SerializeToString,
-            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
-
-    @staticmethod
-    def ReceiveMessage(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_stream(request, target, '/ChatService/ReceiveMessage',
-            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
-            chat__pb2.ChatMessage.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -8,47 +8,31 @@ class ChatClient:
         self.channel = grpc.insecure_channel('localhost:50051')
         self.stub = chat_pb2_grpc.ChatServiceStub(self.channel)
 
-    def connect_to_chat(self, recipient_username):
-        request = chat_pb2.ConnectionRequest(username=self.username)
+    def connect_to_chat(self, chat_id):
+        request = chat_pb2.ConnectionRequest(username=self.username, chat_id=chat_id)
         response = self.stub.Connect(request)
-
         if response.connected:
-            ip_address = response.ip_address
-            port = response.port
-            print(f"Conectado al chat con {recipient_username}.")
-            return ip_address, port
+            print(f"Conectat a {chat_id} en {response.ip_address}:{response.port}")
+            return response.ip_address, response.port
         else:
-            print(f"No se pudo establecer conexión con {recipient_username}.")
+            print(f"No s'ha pogut conectar a {chat_id}")
             return None, None
 
-    def send_message(self, recipient_username, message, ip_address, port):
-        channel = grpc.insecure_channel(f"{ip_address}:{port}")
-        stub = chat_pb2_grpc.ChatServiceStub(channel)
-        request = chat_pb2.SendMessageRequest(sender_username=self.username,
-                                                   recipient_username=recipient_username,
-                                                   message=message)
-        response = stub.SendMessage(request)
-        print("Mensaje enviado con éxito.")
-
-    def receive_messages(self):
-        # Este método no se implementa en el cliente
-        pass
 
 if __name__ == "__main__":
     username = input("Ingrese su nombre de usuario: ")
     client = ChatClient(username)
 
     while True:
-        print("\n1. Enviar mensaje")
+        print("\n1. Connect To Chat")
         print("2. Salir")
         choice = input("Seleccione una opción: ")
 
         if choice == "1":
-            recipient_username = input("Ingrese el nombre de usuario del destinatario: ")
-            ip_address, port = client.connect_to_chat(recipient_username)
-            message = input("Ingrese el mensaje a enviar: ")
-            client.send_message(recipient_username, message, ip_address, port)
+            chat_id = input("Ingrese el nombre de usuario del destinatario: ")
+            ip_address, port = client.connect_to_chat(chat_id)
         elif choice == "2":
             break
         else:
             print("Opción inválida. Intente de nuevo.")
+

@@ -9,39 +9,19 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         self.name_server = name_server
 
     def Connect(self, request, context):
-        ip_address, port = self.name_server.get_user_address(request.username)
+        username = request.username
+        chat_id = request.chat_id
+
+        ip_address, port = self.name_server.get_user_address(chat_id)
 
         if ip_address and port:
-            response = chat_pb2.ConnectionResponse(connected=True, ip_address=ip_address, port=port)
+            return chat_pb2.ConnectionResponse(connected=True, ip_address=ip_address, port=port)
         else:
-            response = chat_pb2.ConnectionResponse(connected=False)
-
-        return response
-
-    def SendMessage(self, request, context):
-        recipient_ip, recipient_port = self.name_server.get_user_address(request.recipient_username)
-
-        if recipient_ip and recipient_port:
-            channel = grpc.insecure_channel(f"{recipient_ip}:{recipient_port}")
-            stub = chat_pb2_grpc.ChatServiceStub(channel)
-
-            message = chat_pb2.ChatMessage(sender_username=request.sender_username, message=request.message)
-            stub.ReceiveMessage(message)
-
-            return chat_pb2.Empty()
-        else:
-            context.set_details(f"El usuario '{request.recipient_username}' no está disponible.")
-            context.set_code(grpc.StatusCode.NOT_FOUND)
-            return chat_pb2.Empty()
-
-    def ReceiveMessage(self, request, context):
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('ReceiveMessage method is not implemented on the server side.')
-        raise NotImplementedError('ReceiveMessage method is not implemented on the server side.')
+            return chat_pb2.ConnectionResponse(connected=False, ip_address="", port=0)
 
 class NameServer:
     def __init__(self):
-        self.redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
+        self.redis_client = redis.StrictRedis(host="localhost", port=6379, db=0)
 
     def register_user(self, username, ip_address, port):
         self.redis_client.hmset(username, {'ip_address': ip_address, 'port': port})
@@ -67,7 +47,7 @@ def run_server():
 if __name__ == '__main__':
     name_server = NameServer()
 
-    name_server.register_user('Pepe', '192.168.1.100', 6000)
-    name_server.register_user('Anna', '192.168.1.101', 6001)
+    name_server.register_user('Pepe', 'localhost', 6000)
+    name_server.register_user('Anna', 'localhost', 6001)
 
     run_server()
