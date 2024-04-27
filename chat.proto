@@ -1,5 +1,14 @@
 syntax = "proto3";
 
+
+
+
+service ChatService {
+    rpc Connect(ConnectionRequest) returns (ConnectionResponse);
+    rpc SendMessage(MessageRequest) returns (MessageResponse);
+    
+}
+
 message ConnectionRequest {
     string username = 1;
     string chat_id = 2;
@@ -12,6 +21,12 @@ message ConnectionResponse {
 }
 
 
-service ChatService {
-    rpc Connect (ConnectionRequest) returns (ConnectionResponse);
+message MessageRequest {
+    string sender = 1;
+    string recipient = 2;
+    string message = 3;
+}
+
+message MessageResponse {
+    bool success = 1;
 }
