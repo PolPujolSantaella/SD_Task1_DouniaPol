@@ -29,7 +29,6 @@ service ChatService {
     rpc Login (LoginRequest) returns (Response) {}
     rpc Connect (ChatRequest) returns (Response) {}
 }
-
 service ChatClient {
     rpc ReceiveMessage (Message) returns (MessageResponse) {}
 }

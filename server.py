@@ -18,7 +18,6 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
             return chat_pb2.Response(success=True, message="Usuari Registrat", ip=ip, port=int(port))
         else:
             return chat_pb2.Response(success=False, message="Usuari no registrat")
-
     def Connect(self, request, context):
         chat_id = request.chat_id
         chat_address = self.name_server.get_user_address(chat_id)
