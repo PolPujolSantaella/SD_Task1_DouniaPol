@@ -3,51 +3,57 @@ import chat_pb2
 import chat_pb2_grpc
 import redis
 from concurrent import futures
+import time
 
 class ChatService(chat_pb2_grpc.ChatServiceServicer):
     def __init__(self, name_server):
         self.name_server = name_server
 
-    def Connect(self, request, context):
+    def Login(self, request, context):
         username = request.username
-        chat_id = request.chat_id
-
-        ip_address, port = self.name_server.get_user_address(chat_id)
-
-        if ip_address and port:
-            return chat_pb2.ConnectionResponse(connected=True, ip_address=ip_address, port=port)
+        address = self.name_server.get_user_address(username)
+        if address:
+            print (f"Usuari {username} ha iniciat!")
+            ip, port = address.split(':')
+            return chat_pb2.Response(success=True, message="Usuari Registrat", ip=ip, port=int(port))
         else:
-            return chat_pb2.ConnectionResponse(connected=False, ip_address="", port=0)
+            return chat_pb2.Response(success=False, message="Usuari no registrat")
+
+    def Connect(self, request, context):
+        chat_id = request.chat_id
+        chat_address = self.name_server.get_user_address(chat_id)
+        if chat_address:
+            ip, port = chat_address.split(':')
+            return chat_pb2.Response(success=True, message="", ip=ip, port=int(port))
+        else:
+            return chat_pb2.Response(success=False)
 
 class NameServer:
     def __init__(self):
-        self.redis_client = redis.StrictRedis(host="localhost", port=6379, db=0)
+        try:
+            self.redis_client = redis.StrictRedis(host="localhost", port=6379, password="", decode_responses=True)
+            self.redis_client.set("usr:Pepe", "127.0.0.1:50052")
+            self.redis_client.set("usr:Anna", "127.0.0.1:50053")
 
-    def register_user(self, username, ip_address, port):
-        self.redis_client.hmset(username, {'ip_address': ip_address, 'port': port})
+        except Exception as e:
+            print(e)
 
-    def get_user_address(self, username):
-        user_data = self.redis_client.hgetall(username)
-        if user_data:
-            return user_data.get(b'ip_address').decode(), int(user_data.get(b'port').decode())
-        else:
-            return None, None
-
-    def close(self):
-        self.redis_client.close()
+    def get_user_address(self, user):
+        return self.redis_client.get(f"usr:{user}")
 
 def run_server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     name_server = NameServer()
     chat_pb2_grpc.add_ChatServiceServicer_to_server(ChatService(name_server), server)
-    server.add_insecure_port('[::]:50051')
+    print('Starting server. Listening on port 50051.')
+    server.add_insecure_port('0.0.0.0:50051')
     server.start()
-    server.wait_for_termination()
+    try:
+        while True:
+            time.sleep(86400)
+    except KeyboardInterrupt:
+        server.stop(0)
 
 if __name__ == '__main__':
     name_server = NameServer()
-
-    name_server.register_user('Pepe', 'localhost', 6000)
-    name_server.register_user('Anna', 'localhost', 6001)
-
     run_server()
