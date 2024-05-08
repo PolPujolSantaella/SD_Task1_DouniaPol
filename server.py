@@ -30,6 +30,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         else:
             return chat_pb2.Response(success=False)
 
+
 class NameServer:
     def __init__(self):
         try:
@@ -51,10 +52,9 @@ class MessageBroker:
         self.channel = self.connection.channel()
         self.channel.exchange_declare(exchange='group_chat', exchange_type='fanout')
 
-    def publish_message(self, message):
-        self.channel.basic_publish(exchange='group_chat', routing_key='', body=message)
-
-
+    def publish_message(self, chat_id, message):
+        # Enviar el missatge al chat_id com a exchange.
+        self.channel.basic_publish(exchange=chat_id, routing_key='',body=message)
 
 def run_server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -67,6 +67,7 @@ def run_server():
             time.sleep(86400)
     except KeyboardInterrupt:
         server.stop(0)
+
 
 if __name__ == '__main__':
     run_server()
