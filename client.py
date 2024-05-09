@@ -14,8 +14,9 @@ class ChatClient(chat_pb2_grpc.ChatClientServicer):
         self.user_channel = None
         self.user_stub = None
 
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        self.channel = self.connection.channel()
+        self.rabbitmq_connection = None
+        self.rabbitmq_channel = None
+        self.rabbitmq_exchange = None
 
     def login (self):
         request = chat_pb2.LoginRequest(username=self.username)
@@ -62,33 +63,53 @@ class ChatClient(chat_pb2_grpc.ChatClientServicer):
         except KeyboardInterrupt:
             server.stop(0)
 
+    def setup_rabbitmq(self, chat_id):
+        try:
+            self.rabbitmq_connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
+            self.rabbitmq_channel = self.rabbitmq_connection.channel()
+            self.rabbitmq_exchange = 'chat_id'
+            self.rabbitmq_channel.exchange_declare(exchange=self.rabbitmq_exchange, exchange_type='fanout')
+        except pika.exceptions.AMQPError as e:
+            print (f"Error de RabbitMQ: {e}")
 
 
     def subscribe_to_group_chat(self, chat_id):
-        #Estbalir conexió(__init__)
-        #Declara cua temporal per subscriure't a l'exchange
-        result = self.channel.queue_declare(queue='', exclusive=True)
-        queue_name = result.method.queue
-        self.channel.queue_bind(exchange=chat_id, queue=queue_name)
+        self.setup_rabbitmq(chat_id)
+        def message_listener():
+            if self.rabbitmq_connection:
+                #Declara cua temporal per subscriure't a l'exchange
+                result = self.rabbitmq_channel.queue_declare(queue='', exclusive=True)
+                queue_name = result.method.queue
+                self.rabbitmq_channel.queue_bind(exchange=self.rabbitmq_exchange, queue=queue_name)
 
-        #Callback: Gestiona Missatges rebuts
-        def callback(ch, method, properties, body):
-            message = body.decode('utf-8')
-            print(f"{chat_id}: {message}")
+                #Callback: Gestiona Missatges rebuts
+                def callback(ch, method, properties, body):
+                    message = body.decode('utf-8')
+                    print(f"{chat_id}: {message}")
 
-        #Consumeix missatges
-        self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-        print(f"Subscrit a {chat_id}. Esperant missatges...")
+                #Consumeix missatges
+                self.rabbitmq_channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+                print(f"Subscrit a {chat_id}. Esperant missatges...")
+                self.rabbitmq_channel.start_consuming()
+            else:
+                print("No s'ha establert conexió amb RabbitMQ.")
 
-        # Comença a consumir missatges
-        self.channel.start_consuming()
+        thread=threading.Thread(target=message_listener)
+        thread.start()
 
-    def send_group_message(self, chat_id, message):
-        message = f"{self.username}: {message}"
+    def send_group_message(self, chat_id):
+        if not self.rabbitmq_connection:
+            print("No s'ha establer la conexió amb RabbitMQ")
+            return
+        while True:
+            message = input("")
+            if message.lower() == "exit":
+                print("Tancant conexió...")
+                break
+            message = f"{self.username}: {message}"
+            self.rabbitmq_channel.basic_publish(exchange=self.rabbitmq_exchange, routing_key='', body=message.encode('utf-8'))
 
-        self.channel.basic_publish(exchange=chat_id, routing_key='',body=message.encode('utf-8'))
-        print(f"{message}")
-
+        self.rabbitmq_connection.close()
 
 if __name__ == "__main__":
     username = input("Login: ")
@@ -98,8 +119,7 @@ if __name__ == "__main__":
         while True:
             print("\n1. Connect To Chat")
             print("2. Subscribe to chat")
-            print("3. Enviar Missatges Chat Grupal")
-            print("4. Salir")
+            print("3. Salir")
             choice = input("Seleccione una opción: ")
 
             if choice == "1":
@@ -109,14 +129,9 @@ if __name__ == "__main__":
             elif choice == "2":
                 chat_id = input("Grup al que vols subscriure't : ")
                 client.subscribe_to_group_chat(chat_id)
+                client.send_group_message(chat_id)
             elif choice == "3":
-                chat_id = input("Grup al que vols enviar missatges : ")
-                while True:
-                    message = input("")
-                    if message.lower() == "exit":
-                        break
-                    client.send_group_message(chat_id, message)
-            elif choice == "4":
                 break
             else:
                 print("Opción inválida. Intente de nuevo.")
+
