@@ -10,58 +10,76 @@ class ChatClient(chat_pb2_grpc.ChatClientServicer):
         self.username = username
         self.server_channel = grpc.insecure_channel('localhost:50051')
         self.server_stub = chat_pb2_grpc.ChatServiceStub(self.server_channel)
+        self.server = None
 
         self.user_channel = None
         self.user_stub = None
+        self.connected = {}
 
         self.rabbitmq_connection = None
         self.rabbitmq_channel = None
         self.rabbitmq_exchange = None
 
+        self.thread = None
+        self.thread_stop = threading.Event()
+
     def login (self):
         request = chat_pb2.LoginRequest(username=self.username)
-        response = self.server_stub.Login(request)
-        if response.success:
-            print (f"{response.message}: {response.ip}:{response.port}")
-            return response.port
-        else:
-            print (f"{response.message}")
+        try:
+            response = self.server_stub.Login(request)
+            if response.success:
+                print (f"{response.message}: {response.ip}:{response.port}")
+                return response.port
+            else:
+                print (f"{response.message}")
+                return None
+        except grpc.RpcError as e:
+            print(f"Error de gRPC: {e}")
             return None
 
     def connect_to_chat(self, chat_id):
         request = chat_pb2.ChatRequest(username=self.username, chat_id=chat_id)
-        response = self.server_stub.Connect(request)
-        if response.success:
-            print(f"\t CHAT {chat_id}")
-            self.user_channel = grpc.insecure_channel(f'{response.ip}:{response.port}')
-            self.user_stub = chat_pb2_grpc.ChatClientStub(self.user_channel)
-            return response.ip, response.port
-        else:
-            print(f"No s'ha pogut conectar amb {chat_id}")
-            return None
+        try:
+            response = self.server_stub.Connect(request)
+            if response.success:
+                self.connected[self.username] == chat_id
+                print(f"\t CHAT {chat_id}")
+                self.user_channel = grpc.insecure_channel(f'{response.ip}:{response.port}')
+                self.user_stub = chat_pb2_grpc.ChatClientStub(self.user_channel)
+            else:
+                print(f"No s'ha pogut conectar amb {chat_id}")
+        except grpc.RpcError as e:
+            print(f"Error de gRPC: {e}")
 
-    def send_messages(self, message, username):
-        request = chat_pb2.Message(sender=self.username, message=message)
-        response = self.user_stub.ReceiveMessage(request)
-        if not response.success:
-            print("El destinatari no està conectat al chat.")
+    def send_messages(self, message, chat_id):
+        if chat_id in self.connected and self.connected[chat_id] == self.username:
+            request = chat_pb2.Message(sender=self.username, message=message)
+            try:
+                response = self.user_stub.ReceiveMessage(request)
+                if not response.success:
+                    print("El destinatari no està conectat al chat.")
+            except grpc.RpcError as e:
+                print(f"Error de gRPC: {e}")
+        else:
+            pass
 
     def ReceiveMessage(self, request, context):
         print (f"{request.sender}: {request.message}")
         return chat_pb2.MessageResponse(success=True)
 
-    def start_server(self, client, port_client):
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
-        chat_pb2_grpc.add_ChatClientServicer_to_server(client, server)
-        server.add_insecure_port(f'[::]:{port_client}')
-        server.start()
-        try:
-            print ("(Per sortir Ctrl+C).")
-            while True:
-                    message = input("")
-                    client.send_messages(message, self.username)
-        except KeyboardInterrupt:
-            server.stop(0)
+    def start_server(self, client, port_client, chat_id):
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=1))
+        chat_pb2_grpc.add_ChatClientServicer_to_server(client, self.server)
+        self.server.add_insecure_port(f'[::]:{port_client}')
+        self.server.start()
+
+        print ("(Per sortir escriu 'exit').")
+        while True:
+            message = input("")
+            if message.lower() == "exit":
+                break
+            client.send_messages(message, chat_id)
+        self.server.stop(0)
 
     def setup_rabbitmq(self, chat_id):
         try:
@@ -74,28 +92,31 @@ class ChatClient(chat_pb2_grpc.ChatClientServicer):
 
 
     def subscribe_to_group_chat(self, chat_id):
+        self.thread_stop.clear()
         self.setup_rabbitmq(chat_id)
-        def message_listener():
-            if self.rabbitmq_connection:
-                #Declara cua temporal per subscriure't a l'exchange
-                result = self.rabbitmq_channel.queue_declare(queue='', exclusive=True)
-                queue_name = result.method.queue
-                self.rabbitmq_channel.queue_bind(exchange=self.rabbitmq_exchange, queue=queue_name)
+        self.thread = threading.Thread(target=self.message_listener)
+        self.thread.start()
 
-                #Callback: Gestiona Missatges rebuts
-                def callback(ch, method, properties, body):
-                    message = body.decode('utf-8')
-                    print(f"{chat_id}: {message}")
 
-                #Consumeix missatges
-                self.rabbitmq_channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
-                print(f"Subscrit a {chat_id}. Esperant missatges...")
-                self.rabbitmq_channel.start_consuming()
-            else:
-                print("No s'ha establert conexió amb RabbitMQ.")
+    def message_listener(self):
+        if self.rabbitmq_connection:
+            #Declara cua temporal per subscriure't a l'exchange
+            result = self.rabbitmq_channel.queue_declare(queue='', exclusive=True)
+            queue_name = result.method.queue
+            self.rabbitmq_channel.queue_bind(exchange=self.rabbitmq_exchange, queue=queue_name)
 
-        thread=threading.Thread(target=message_listener)
-        thread.start()
+            #Callback: Gestiona Missatges rebuts
+            def callback(ch, method, properties, body):
+                message = body.decode('utf-8')
+                print(f"{message}")
+
+            #Consumeix missatges
+            self.rabbitmq_channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+            print(f"Subscrit a {chat_id}. Esperant missatges...")
+            while not self.thread_stop.is_set():
+                self.rabbitmq_channel.connection.process_data_events()
+        else:
+            print("No s'ha establert conexió amb RabbitMQ.")
 
     def send_group_message(self, chat_id):
         if not self.rabbitmq_connection:
@@ -105,6 +126,7 @@ class ChatClient(chat_pb2_grpc.ChatClientServicer):
             message = input("")
             if message.lower() == "exit":
                 print("Tancant conexió...")
+                self.thread_stop.set()
                 break
             message = f"{self.username}: {message}"
             self.rabbitmq_channel.basic_publish(exchange=self.rabbitmq_exchange, routing_key='', body=message.encode('utf-8'))
@@ -124,8 +146,7 @@ if __name__ == "__main__":
 
             if choice == "1":
                 chat_id = input("Chat al que vols connectar: ")
-                client.connect_to_chat(chat_id)
-                client.start_server(client, port_client)
+                client.start_server(client, port_client, chat_id)
             elif choice == "2":
                 chat_id = input("Grup al que vols subscriure't : ")
                 client.subscribe_to_group_chat(chat_id)
