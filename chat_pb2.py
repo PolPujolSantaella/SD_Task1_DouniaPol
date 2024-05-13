@@ -12,27 +12,28 @@ from google.protobuf.internal import builder as _builder
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\" \n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"F\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\n\n\x02ip\x18\x03 \x01(\t\x12\x0c\n\x04port\x18\x04 \x01(\x05\"0\n\x0b\x43hatRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x0f\n\x07\x63hat_id\x18\x02 \x01(\t\"*\n\x07Message\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\"\"\n\x0fMessageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32X\n\x0b\x43hatService\x12#\n\x05Login\x12\r.LoginRequest\x1a\t.Response\"\x00\x12$\n\x07\x43onnect\x12\x0c.ChatRequest\x1a\t.Response\"\x00\x32<\n\nChatClient\x12.\n\x0eReceiveMessage\x12\x08.Message\x1a\x10.MessageResponse\"\x00\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\nchat.proto\x1a\x1bgoogle/protobuf/empty.proto\" \n\x0cLoginRequest\x12\x10\n\x08username\x18\x01 \x01(\t\"F\n\x08Response\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12\n\n\x02ip\x18\x03 \x01(\t\x12\x0c\n\x04port\x18\x04 \x01(\x05\"0\n\x0b\x43hatRequest\x12\x10\n\x08username\x18\x01 \x01(\t\x12\x0f\n\x07\x63hat_id\x18\x02 \x01(\t\"*\n\x07Message\x12\x0e\n\x06sender\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\"\"\n\x0fMessageResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x93\x01\n\x0b\x43hatService\x12#\n\x05Login\x12\r.LoginRequest\x1a\t.Response\"\x00\x12$\n\x07\x43onnect\x12\x0c.ChatRequest\x1a\t.Response\"\x00\x12\x39\n\x0fUserUnconnected\x12\x0c.ChatRequest\x1a\x16.google.protobuf.Empty\"\x00\x32<\n\nChatClient\x12.\n\x0eReceiveMessage\x12\x08.Message\x1a\x10.MessageResponse\"\x00\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'chat_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_LOGINREQUEST']._serialized_start=14
-  _globals['_LOGINREQUEST']._serialized_end=46
-  _globals['_RESPONSE']._serialized_start=48
-  _globals['_RESPONSE']._serialized_end=118
-  _globals['_CHATREQUEST']._serialized_start=120
-  _globals['_CHATREQUEST']._serialized_end=168
-  _globals['_MESSAGE']._serialized_start=170
-  _globals['_MESSAGE']._serialized_end=212
-  _globals['_MESSAGERESPONSE']._serialized_start=214
-  _globals['_MESSAGERESPONSE']._serialized_end=248
-  _globals['_CHATSERVICE']._serialized_start=250
-  _globals['_CHATSERVICE']._serialized_end=338
-  _globals['_CHATCLIENT']._serialized_start=340
-  _globals['_CHATCLIENT']._serialized_end=400
+  _globals['_LOGINREQUEST']._serialized_start=43
+  _globals['_LOGINREQUEST']._serialized_end=75
+  _globals['_RESPONSE']._serialized_start=77
+  _globals['_RESPONSE']._serialized_end=147
+  _globals['_CHATREQUEST']._serialized_start=149
+  _globals['_CHATREQUEST']._serialized_end=197
+  _globals['_MESSAGE']._serialized_start=199
+  _globals['_MESSAGE']._serialized_end=241
+  _globals['_MESSAGERESPONSE']._serialized_start=243
+  _globals['_MESSAGERESPONSE']._serialized_end=277
+  _globals['_CHATSERVICE']._serialized_start=280
+  _globals['_CHATSERVICE']._serialized_end=427
+  _globals['_CHATCLIENT']._serialized_start=429
+  _globals['_CHATCLIENT']._serialized_end=489
 # @@protoc_insertion_point(module_scope)

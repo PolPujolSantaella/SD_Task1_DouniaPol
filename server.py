@@ -10,6 +10,7 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
     def __init__(self):
         self.name_server = NameServer()
         self.message_broker = MessageBroker()
+        self.isConnected = {}
 
     def Login(self, request, context):
         username = request.username
@@ -17,19 +18,32 @@ class ChatService(chat_pb2_grpc.ChatServiceServicer):
         if address:
             print (f"Usuari {username} ha iniciat!")
             ip, port = address.split(':')
+            self.isConnected[username] = False
             return chat_pb2.Response(success=True, message="Usuari Registrat", ip=ip, port=int(port))
         else:
             return chat_pb2.Response(success=False, message="Usuari no registrat")
 
     def Connect(self, request, context):
         chat_id = request.chat_id
-        chat_address = self.name_server.get_user_address(chat_id)
-        if chat_address:
-            ip, port = chat_address.split(':')
-            return chat_pb2.Response(success=True, message="", ip=ip, port=int(port))
+        if self.isUserConnected(chat_id):
+            return chat_pb2.Response(success=False, message="Usuari no Conectat o conectat amb algu altre")
         else:
-            return chat_pb2.Response(success=False)
+            chat_address = self.name_server.get_user_address(chat_id)
+            if chat_address:
+                ip, port = chat_address.split(':')
+                self.isConnected[chat_id] = True
+                return chat_pb2.Response(success=True, message="Conexió establerta", ip=ip, port=int(port))
+            else:
+                return chat_pb2.Response(success=False, message="No s'ha trobat informació client")
 
+    def isUserConnected(self, chat_id):
+        return self.isConnected.get(chat_id, True)
+
+    def UserUnconnected(self, request, context):
+        username = request.username
+        self.isConnected[username] = False
+        response = chat_pb2.google_dot_protobuf_dot_empty__pb2.Empty()
+        return response
 
 class NameServer:
     def __init__(self):
