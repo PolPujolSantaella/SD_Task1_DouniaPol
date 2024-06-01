@@ -23,7 +23,7 @@ class Response(_message.Message):
     port: int
     def __init__(self, success: bool = ..., message: _Optional[str] = ..., ip: _Optional[str] = ..., port: _Optional[int] = ...) -> None: ...
 
-class ChatRequest(_message.Message):
+class ConnectionRequest(_message.Message):
     __slots__ = ("username", "chat_id")
     USERNAME_FIELD_NUMBER: _ClassVar[int]
     CHAT_ID_FIELD_NUMBER: _ClassVar[int]
@@ -31,7 +31,7 @@ class ChatRequest(_message.Message):
     chat_id: str
     def __init__(self, username: _Optional[str] = ..., chat_id: _Optional[str] = ...) -> None: ...
 
-class Message(_message.Message):
+class MessageRequest(_message.Message):
     __slots__ = ("sender", "message")
     SENDER_FIELD_NUMBER: _ClassVar[int]
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
@@ -39,8 +39,8 @@ class Message(_message.Message):
     message: str
     def __init__(self, sender: _Optional[str] = ..., message: _Optional[str] = ...) -> None: ...
 
-class MessageResponse(_message.Message):
-    __slots__ = ("success",)
-    SUCCESS_FIELD_NUMBER: _ClassVar[int]
-    success: bool
-    def __init__(self, success: bool = ...) -> None: ...
+class Subscribe(_message.Message):
+    __slots__ = ("chat_id",)
+    CHAT_ID_FIELD_NUMBER: _ClassVar[int]
+    chat_id: str
+    def __init__(self, chat_id: _Optional[str] = ...) -> None: ...

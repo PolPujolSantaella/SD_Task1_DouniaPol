@@ -20,15 +20,35 @@ class ChatServiceStub(object):
                 request_serializer=chat__pb2.LoginRequest.SerializeToString,
                 response_deserializer=chat__pb2.Response.FromString,
                 )
-        self.Connect = channel.unary_unary(
-                '/ChatService/Connect',
-                request_serializer=chat__pb2.ChatRequest.SerializeToString,
+        self.Connection = channel.unary_unary(
+                '/ChatService/Connection',
+                request_serializer=chat__pb2.ConnectionRequest.SerializeToString,
                 response_deserializer=chat__pb2.Response.FromString,
                 )
-        self.UserUnconnected = channel.unary_unary(
-                '/ChatService/UserUnconnected',
-                request_serializer=chat__pb2.ChatRequest.SerializeToString,
+        self.UserDisconnected = channel.unary_unary(
+                '/ChatService/UserDisconnected',
+                request_serializer=chat__pb2.ConnectionRequest.SerializeToString,
+                response_deserializer=chat__pb2.Response.FromString,
+                )
+        self.Disconnected = channel.unary_unary(
+                '/ChatService/Disconnected',
+                request_serializer=chat__pb2.ConnectionRequest.SerializeToString,
                 response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                )
+        self.Subscribe_group = channel.unary_unary(
+                '/ChatService/Subscribe_group',
+                request_serializer=chat__pb2.Subscribe.SerializeToString,
+                response_deserializer=chat__pb2.Response.FromString,
+                )
+        self.SendMessageGroup = channel.unary_unary(
+                '/ChatService/SendMessageGroup',
+                request_serializer=chat__pb2.MessageRequest.SerializeToString,
+                response_deserializer=chat__pb2.Response.FromString,
+                )
+        self.Discovery = channel.unary_unary(
+                '/ChatService/Discovery',
+                request_serializer=chat__pb2.LoginRequest.SerializeToString,
+                response_deserializer=chat__pb2.Response.FromString,
                 )
 
 
@@ -41,13 +61,37 @@ class ChatServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def Connect(self, request, context):
+    def Connection(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def UserUnconnected(self, request, context):
+    def UserDisconnected(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Disconnected(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Subscribe_group(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SendMessageGroup(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Discovery(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -61,15 +105,35 @@ def add_ChatServiceServicer_to_server(servicer, server):
                     request_deserializer=chat__pb2.LoginRequest.FromString,
                     response_serializer=chat__pb2.Response.SerializeToString,
             ),
-            'Connect': grpc.unary_unary_rpc_method_handler(
-                    servicer.Connect,
-                    request_deserializer=chat__pb2.ChatRequest.FromString,
+            'Connection': grpc.unary_unary_rpc_method_handler(
+                    servicer.Connection,
+                    request_deserializer=chat__pb2.ConnectionRequest.FromString,
                     response_serializer=chat__pb2.Response.SerializeToString,
             ),
-            'UserUnconnected': grpc.unary_unary_rpc_method_handler(
-                    servicer.UserUnconnected,
-                    request_deserializer=chat__pb2.ChatRequest.FromString,
+            'UserDisconnected': grpc.unary_unary_rpc_method_handler(
+                    servicer.UserDisconnected,
+                    request_deserializer=chat__pb2.ConnectionRequest.FromString,
+                    response_serializer=chat__pb2.Response.SerializeToString,
+            ),
+            'Disconnected': grpc.unary_unary_rpc_method_handler(
+                    servicer.Disconnected,
+                    request_deserializer=chat__pb2.ConnectionRequest.FromString,
                     response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Subscribe_group': grpc.unary_unary_rpc_method_handler(
+                    servicer.Subscribe_group,
+                    request_deserializer=chat__pb2.Subscribe.FromString,
+                    response_serializer=chat__pb2.Response.SerializeToString,
+            ),
+            'SendMessageGroup': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendMessageGroup,
+                    request_deserializer=chat__pb2.MessageRequest.FromString,
+                    response_serializer=chat__pb2.Response.SerializeToString,
+            ),
+            'Discovery': grpc.unary_unary_rpc_method_handler(
+                    servicer.Discovery,
+                    request_deserializer=chat__pb2.LoginRequest.FromString,
+                    response_serializer=chat__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -99,7 +163,7 @@ class ChatService(object):
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def Connect(request,
+    def Connection(request,
             target,
             options=(),
             channel_credentials=None,
@@ -109,14 +173,14 @@ class ChatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ChatService/Connect',
-            chat__pb2.ChatRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/ChatService/Connection',
+            chat__pb2.ConnectionRequest.SerializeToString,
             chat__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def UserUnconnected(request,
+    def UserDisconnected(request,
             target,
             options=(),
             channel_credentials=None,
@@ -126,9 +190,77 @@ class ChatService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/ChatService/UserUnconnected',
-            chat__pb2.ChatRequest.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/ChatService/UserDisconnected',
+            chat__pb2.ConnectionRequest.SerializeToString,
+            chat__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Disconnected(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChatService/Disconnected',
+            chat__pb2.ConnectionRequest.SerializeToString,
             google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Subscribe_group(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChatService/Subscribe_group',
+            chat__pb2.Subscribe.SerializeToString,
+            chat__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SendMessageGroup(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChatService/SendMessageGroup',
+            chat__pb2.MessageRequest.SerializeToString,
+            chat__pb2.Response.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Discovery(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/ChatService/Discovery',
+            chat__pb2.LoginRequest.SerializeToString,
+            chat__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
@@ -144,8 +276,8 @@ class ChatClientStub(object):
         """
         self.ReceiveMessage = channel.unary_unary(
                 '/ChatClient/ReceiveMessage',
-                request_serializer=chat__pb2.Message.SerializeToString,
-                response_deserializer=chat__pb2.MessageResponse.FromString,
+                request_serializer=chat__pb2.MessageRequest.SerializeToString,
+                response_deserializer=chat__pb2.Response.FromString,
                 )
 
 
@@ -163,8 +295,8 @@ def add_ChatClientServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'ReceiveMessage': grpc.unary_unary_rpc_method_handler(
                     servicer.ReceiveMessage,
-                    request_deserializer=chat__pb2.Message.FromString,
-                    response_serializer=chat__pb2.MessageResponse.SerializeToString,
+                    request_deserializer=chat__pb2.MessageRequest.FromString,
+                    response_serializer=chat__pb2.Response.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -188,7 +320,7 @@ class ChatClient(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/ChatClient/ReceiveMessage',
-            chat__pb2.Message.SerializeToString,
-            chat__pb2.MessageResponse.FromString,
+            chat__pb2.MessageRequest.SerializeToString,
+            chat__pb2.Response.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

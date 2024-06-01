@@ -12,26 +12,30 @@ message Response {
     int32 port = 4;
 }
 
-message ChatRequest {
+message ConnectionRequest {
     string username = 1;
     string chat_id = 2;
 }
 
-message Message {
+message MessageRequest {
     string sender = 1;
     string message = 2;
 }
 
-message MessageResponse {
-    bool success = 1;
+message Subscribe {
+    string chat_id = 1;
 }
 
 service ChatService {
     rpc Login (LoginRequest) returns (Response) {}
-    rpc Connect (ChatRequest) returns (Response) {}
-    rpc UserUnconnected (ChatRequest) returns (google.protobuf.Empty) {}
+    rpc Connection (ConnectionRequest) returns (Response) {}
+    rpc UserDisconnected (ConnectionRequest) returns (Response) {}
+    rpc Disconnected (ConnectionRequest) returns (google.protobuf.Empty) {} 
+    rpc Subscribe_group (Subscribe) returns (Response) {}
+    rpc SendMessageGroup (MessageRequest) returns (Response) {}
+    rpc Discovery (LoginRequest) returns (Response) {}
 }
 
 service ChatClient {
-    rpc ReceiveMessage (Message) returns (MessageResponse) {}
+    rpc ReceiveMessage (MessageRequest) returns (Response) {}
 }
