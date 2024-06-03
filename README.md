@@ -14,7 +14,7 @@ Abans de començar, assegureu-vos de tenir instal·lats els següents components
 Podeu instal·lar les dependències necessàries mitjançant pip:
 
 ```sh
-pip install grpcio grpcio-tools redis pika
+pip3 install grpcio grpcio-tools redis pika
 ```
 
 ## Arxius del Projecte
@@ -29,7 +29,7 @@ pip install grpcio grpcio-tools redis pika
 Abans de poder executar el servidor i el client, heu de generar els fitxers gRPC a partir de la definició del servei `chat.proto`. Executeu el següent comandament:
 
 ```sh
-python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. chat.proto
+python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. chat.proto
 ```
 
 ## Executar el Servidor
@@ -37,7 +37,7 @@ python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. chat.proto
 Per executar el servidor, obriu un terminal i executeu:
 
 ```sh
-python server.py
+python3 server.py
 ```
 
 El servidor començarà a escoltar a la port `50051`.
@@ -47,7 +47,7 @@ El servidor començarà a escoltar a la port `50051`.
 Per executar el client, obriu un altre terminal i executeu:
 
 ```sh
-python client.py
+python3 client.py
 ```
 
 Se us demanarà que introduïu el vostre nom d'usuari per iniciar sessió. Després, podeu seleccionar una de les opcions disponibles:
